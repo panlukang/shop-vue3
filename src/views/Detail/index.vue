@@ -3,8 +3,9 @@ import { getDetail } from '@/apis/detail'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import DetailHot from './components/DetailHot.vue';
-import ImageView from '@/components/imageView/index.vue'
+import { useCartStore } from '@/stores/cartStore'
 
+const cartStore = useCartStore()
 const goods = ref({})
 const route = useRoute()
 const getGoods = async () => {
@@ -12,6 +13,36 @@ const getGoods = async () => {
     goods.value = res.result
 }
 onMounted(() => getGoods())
+
+// sku被操作时
+let skuObj = {}
+const skuChange = (sku) => {
+    skuObj = sku
+}
+
+//count
+const count = ref(1)
+const countChange = (count) => {
+    console.log(count)
+}
+
+//添加购物车
+const addCart = () => {
+    if (skuObj.skuId) {
+        cartStore.addCart({
+            id: goods.value.id,
+            name: goods.value.name,
+            picture: goods.value.mainPictures[0],
+            price: goods.value.price,
+            count: count.value,
+            skuId: skuObj.skuId,
+            attrsText: skuObj.specsText,
+            selected: true,
+        })
+    } else {
+        ElMessage.warning('请选择规格')
+    }
+}
 </script>
 
 <template>
@@ -26,7 +57,7 @@ onMounted(() => getGoods())
                     <el-breadcrumb-item :to="{ path: `/category/sub/${goods.categories?.[0].id}` }">{{
                         goods.categories?.[0].name }}
                     </el-breadcrumb-item>
-                    <el-breadcrumb-item>抓绒保暖，毛毛虫子儿童运动鞋</el-breadcrumb-item>
+                    <el-breadcrumb-item>{{ goods.name }}</el-breadcrumb-item>
                 </el-breadcrumb>
             </div>
             <!-- 商品信息 -->
@@ -35,7 +66,7 @@ onMounted(() => getGoods())
                     <div class="goods-info">
                         <div class="media">
                             <!-- 图片预览区 -->
-                            <ImageView />
+                            <ImageView :imageList="goods.mainPictures" />
                             <!-- 统计数量 -->
                             <ul class="goods-sales">
                                 <li>
@@ -84,12 +115,12 @@ onMounted(() => getGoods())
                                 </dl>
                             </div>
                             <!-- sku组件 -->
-
+                            <XtxSku :goods="goods" @change="skuChange" />
                             <!-- 数据组件 -->
-
+                            <el-input-number v-model="count" @change="countChange"></el-input-number>
                             <!-- 按钮组件 -->
                             <div>
-                                <el-button size="large" class="btn">
+                                <el-button size="large" class="btn" @click="addCart">
                                     加入购物车
                                 </el-button>
                             </div>

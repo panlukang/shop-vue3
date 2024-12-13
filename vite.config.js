@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-keys */
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
